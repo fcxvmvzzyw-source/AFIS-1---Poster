@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFIS I — Programa d'Activitat Física Terapèutica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Poster-matched colour palette */
+      --bg:        #060f1e;
+      --surface:   #0b1828;
+      --surface2:  #0f2035;
+      --border:        rgba(59, 113, 198, 0.18);
+      --border-hover:  rgba(59, 113, 198, 0.40);
+      --text-primary:  #eef2f8;
+      --text-secondary:#8da4c4;
+      --text-muted:    #3a5070;
+
+      /* Phase accent colours (poster exact) */
+      --blue:   #3B71C6;   /* S1–S2 Adaptació   */
+      --green:  #70AD47;   /* S3–S4 Progressió   */
+      --orange: #ED7D31;   /* S5–S6 Consolidació */
+      --purple: #8764B8;   /* S7–S8 Autonomia    */
+
+      /* Scrollbar / progress colour = poster primary blue */
+      --accent: var(--blue);
+
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 2px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 4rem;
+      transition: background 0.4s var(--ease), backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(6,15,30,0.90);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-head); font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);
+    }
+    .nav-logo span { color: var(--blue); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-secondary); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; height: 100vh; min-height: 600px;
+      display: flex; align-items: flex-end; overflow: hidden;
+    }
+    .hero-video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.50;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(6,15,30,0.4) 0%, rgba(6,15,30,0) 35%,
+        rgba(6,15,30,0.75) 72%, rgba(6,15,30,1) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 0 4rem 6rem; max-width: 900px;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 1.5rem;
+    }
+    .hero-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--blue); }
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 700; line-height: 1.05;
+      letter-spacing: -0.02em; margin-bottom: 1.5rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--blue); }
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text-secondary);
+      line-height: 1.7; max-width: 560px; margin-bottom: 2.5rem;
+    }
+    .hero-meta { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+    .hero-stat { display: flex; flex-direction: column; gap: 0.25rem; }
+    .hero-stat-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; }
+    .hero-stat-label { font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 0.06em; text-transform: uppercase; }
+    .scroll-hint {
+      position: absolute; bottom: 2rem; right: 4rem; z-index: 2;
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-muted); animation: scrollHint 2s ease-in-out infinite;
+    }
+    .scroll-line { width: 40px; height: 1px; background: var(--text-muted); }
+    @keyframes scrollHint { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    /* ── SECTION GENERIC ── */
+    section { padding: 8rem 4rem; }
+    .section-tag {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-tag::before { content: ''; width: 20px; height: 1px; background: var(--text-muted); }
+    h2 {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    h2 span { color: var(--blue); }
+    .section-lead {
+      font-size: 1.05rem; color: var(--text-secondary);
+      line-height: 1.8; max-width: 640px;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: var(--blue); z-index: 200;
+      transform-origin: left; transform: scaleX(0);
+    }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.10s; }
+    .reveal-delay-2 { transition-delay: 0.20s; }
+    .reveal-delay-3 { transition-delay: 0.30s; }
+    .reveal-delay-4 { transition-delay: 0.40s; }
+    .reveal-delay-5 { transition-delay: 0.50s; }
+
+    /* ── AVALUACIÓ ── */
+    .evaluacio { border-top: 1px solid var(--border); }
+    .eval-intro {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; margin-bottom: 4rem; align-items: end;
+    }
+    .eval-note {
+      padding: 1.5rem;
+      background: rgba(59,113,198,0.07);
+      border: 1px solid rgba(59,113,198,0.25);
+      border-radius: 12px;
+      font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7;
+    }
+    .eval-note strong { color: var(--blue); }
+    .eval-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .eval-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem; position: relative; overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s var(--ease);
+    }
+    .eval-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--eval-color, var(--blue));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s var(--ease);
+    }
+    .eval-card:hover::before { transform: scaleX(1); }
+    .eval-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+    .eval-category {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--eval-color, var(--blue)); margin-bottom: 0.75rem;
+    }
+    .eval-card h4 {
+      font-family: var(--font-head); font-size: 1rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 0.5rem;
+    }
+    .eval-card p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+    .eval-card .eval-what { margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ── MESOCICLE OVERVIEW ── */
+    .mesocicle { background: var(--surface2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .meso-header {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; margin-bottom: 5rem; align-items: end;
+    }
+    .meso-timeline {
+      display: flex; border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .meso-phase {
+      flex: 1; padding: 1.5rem 1.25rem; text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .meso-phase:last-child { border-right: none; }
+    .meso-phase:hover { background: rgba(59,113,198,0.06); }
+    .meso-phase-num {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .meso-phase-name {
+      font-family: var(--font-head); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;
+    }
+    .meso-phase-weeks { font-size: 0.72rem; color: var(--text-secondary); }
+    .phase-dot { width: 8px; height: 8px; border-radius: 50%; margin: 0.6rem auto 0; }
+
+    /* ── PHASE SECTIONS ── */
+    .phase-section { padding: 6rem 4rem; border-top: 1px solid var(--border); }
+    .phase-section:nth-child(even) { background: var(--surface2); }
+    .phase-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 4rem; margin-bottom: 3.5rem;
+    }
+    .phase-label-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 0.35rem 0.85rem; border-radius: 100px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--pc, var(--blue));
+      color: var(--pc, var(--blue));
+      margin-bottom: 1rem;
+    }
+    .phase-h2 {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 0.75rem;
+    }
+    .phase-h2-color { color: var(--pc, var(--blue)); }
+    .phase-desc {
+      font-size: 0.95rem; color: var(--text-secondary);
+      line-height: 1.8; max-width: 480px;
+    }
+    .phase-specs { display: flex; flex-direction: column; gap: 0.75rem; min-width: 240px; }
+    .phase-spec {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.85rem 1.25rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .phase-spec-key { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .phase-spec-val { font-family: var(--font-head); font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+    /* weeks */
+    .weeks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+    .week-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem; position: relative; overflow: hidden;
+    }
+    .week-card::after {
+      content: attr(data-week);
+      position: absolute; top: 1rem; right: 1.25rem;
+      font-family: var(--font-head); font-size: 4rem; font-weight: 800;
+      color: rgba(255,255,255,0.02); line-height: 1; pointer-events: none;
+    }
+    .week-num {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .week-card h4 {
+      font-family: var(--font-head); font-size: 1.05rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 1rem;
+    }
+    .week-sessions { display: flex; flex-direction: column; gap: 0.5rem; }
+    .week-session-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 0.82rem; color: var(--text-secondary);
+    }
+    .session-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    /* exercises */
+    .exercises-title {
+      font-family: var(--font-head); font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 1.25rem;
+    }
+    .exercises-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+    .exercise-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .exercise-card:hover { border-color: var(--border-hover); background: var(--surface); }
+    .exercise-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .exercise-card h5 {
+      font-family: var(--font-head); font-size: 0.85rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 0.4rem;
+    }
+    .exercise-card p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
+    .exercise-tag {
+      display: inline-block; font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.2rem 0.6rem; border-radius: 4px; margin-top: 0.6rem;
+    }
+
+    /* ── SESSIONS ── */
+    .sessions { background: var(--surface2); border-top: 1px solid var(--border); }
+    .sessions-grid {
+      display: grid; grid-template-columns: 1fr 2fr;
+      gap: 5rem; margin-top: 4rem; align-items: start;
+    }
+    .session-part {
+      display: flex; gap: 1.5rem; padding: 2rem;
+      border: 1px solid var(--border); border-radius: 14px;
+      margin-bottom: 1rem; background: var(--surface);
+      transition: border-color 0.3s, transform 0.3s var(--ease);
+    }
+    .session-part:hover { border-color: var(--border-hover); transform: translateX(4px); }
+    .session-part-num {
+      font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+      color: var(--text-muted); line-height: 1; flex-shrink: 0;
+    }
+    .session-part-body h4 {
+      font-family: var(--font-head); font-size: 1rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 0.4rem;
+    }
+    .session-part-body p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7; }
+    .session-types { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .session-type-card {
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.75rem; background: var(--surface);
+      transition: border-color 0.3s, transform 0.3s var(--ease);
+    }
+    .session-type-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+    .session-type-freq {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .session-type-card h4 {
+      font-family: var(--font-head); font-size: 1rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 0.75rem;
+    }
+    .session-type-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+    .session-type-list li {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;
+    }
+    .session-type-list li::before { content: '—'; color: var(--text-muted); flex-shrink: 0; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1.25rem 2rem; }
+      .nav-links { display: none; }
+      section, .phase-section { padding: 5rem 2rem; }
+      .eval-intro, .meso-header, .phase-header, .sessions-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .eval-grid { grid-template-columns: 1fr 1fr; }
+      .exercises-row { grid-template-columns: 1fr 1fr; }
+      .weeks-grid { grid-template-columns: 1fr; }
+      .session-types { grid-template-columns: 1fr; }
+      h2 { font-size: 2rem; }
+      .hero-content { padding: 0 2rem 5rem; }
+      .hero h1 { font-size: 2.5rem; }
+      .scroll-hint { display: none; }
+      .meso-timeline { flex-direction: column; }
+      .meso-phase { border-right: none; border-bottom: 1px solid var(--border); }
+      .meso-phase:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">AFIS<span> I</span></div>
+    <ul class="nav-links">
+      <li><a href="#avaluacio">Avaluació</a></li>
+      <li><a href="#mesocicle">Mesocicle</a></li>
+      <li><a href="#sessions">Sessions</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto">
+      <source src="assets/hero.mp4" type="video/mp4" />
+    </video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Activitat Física i Salut · UVic-UCC Manresa</div>
+      <h1>Programa d'entrenament<br /><em>terapèutic</em> de 8 setmanes</h1>
+      <p class="hero-sub">
+        Una intervenció progressiva i integral dissenyada per a homes PDI universitaris
+        amb sedentarisme, sobrepès i mala qualitat del son.
+      </p>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <span class="hero-stat-num">8</span>
+          <span class="hero-stat-label">Setmanes</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">3</span>
+          <span class="hero-stat-label">Sessions / setmana</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">45–60'</span>
+          <span class="hero-stat-label">Per sessió</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">4</span>
+          <span class="hero-stat-label">Fases diferenciades</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span class="scroll-line"></span>
+      Explora
+    </div>
+  </section>
+
+  <!-- AVALUACIÓ PRÈVIA -->
+  <section class="evaluacio" id="avaluacio">
+    <div class="section-tag">Fase prèvia</div>
+    <h2>Avaluació inicial de<br /><span>la condició física</span></h2>
+
+    <div class="eval-intro">
+      <p class="section-lead">
+        Abans d'iniciar el programa, es realitza una bateria de proves per obtenir valors de referència
+        individuals i garantir una prescripció segura i personalitzada.
+      </p>
+      <div class="eval-note reveal">
+        <strong>Ordre d'execució recomanat:</strong> primer qüestionaris, després resistència
+        cardiorespiratòria, força, flexibilitat i finalment funcionalitat. Es recomana un repòs
+        de ≥ 2h sense AF prèvia i roba còmoda.
+      </div>
+    </div>
+
+    <div class="eval-grid">
+      <div class="eval-card reveal" style="--eval-color: var(--blue)">
+        <div class="eval-category">Qüestionaris</div>
+        <h4>IPAQ-SF</h4>
+        <p>Mesura els nivells d'activitat física dels darrers 7 dies. Classifica en nivell baix, moderat o alt.</p>
+        <p class="eval-what">International Physical Activity Questionnaire – Short Form</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-1" style="--eval-color: var(--blue)">
+        <div class="eval-category">Cribatge</div>
+        <h4>PAR-Q</h4>
+        <p>Qüestionari de preparació per a l'activitat física. Detecta riscos individuals per a exercici intens.</p>
+        <p class="eval-what">Physical Activity Readiness Questionnaire</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-2" style="--eval-color: var(--green)">
+        <div class="eval-category">Resistència cardiorespiratòria</div>
+        <h4>Test de 6 Minuts Caminant</h4>
+        <p>Caminar la màxima distància possible en 6 minuts en un passadís de 30 m. Mesura la capacitat funcional.</p>
+        <p class="eval-what">6-Minute Walk Test (6MWT)</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-3" style="--eval-color: var(--orange)">
+        <div class="eval-category">Força tren superior</div>
+        <h4>Handgrip</h4>
+        <p>Prova isomètrica de força de prensió. Cada 5 kg menys equival a un augment del 16% de mortalitat.</p>
+        <p class="eval-what">Dinamòmetre · Millor de 3 intents · 1 min descans</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-4" style="--eval-color: var(--orange)">
+        <div class="eval-category">Força tren inferior</div>
+        <h4>Sit-to-Stand</h4>
+        <p>Nombre d'aixecaments de cadira en 30'' (força resistència) o temps per a 5/10 repeticions (força explosiva).</p>
+        <p class="eval-what">30'' STS · 5STS · 10STS — Cadira 43 cm</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-5" style="--eval-color: var(--orange)">
+        <div class="eval-category">Força tren superior</div>
+        <h4>Arm Curl Test</h4>
+        <p>Flexions de colze amb manuella en 30''. Homes: 3,6 kg. Moviment complet sense compensació corporal.</p>
+        <p class="eval-what">Un únic intent · Braç dominant</p>
+      </div>
+
+      <div class="eval-card reveal" style="--eval-color: var(--purple)">
+        <div class="eval-category">Flexibilitat</div>
+        <h4>Chair Sit &amp; Reach</h4>
+        <p>Mesura la flexibilitat del tren inferior. Adaptat per persones que no poden seure a terra. Flexió de tronc des de la cadira.</p>
+        <p class="eval-what">Millor de 2 intents · Centímetres</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-1" style="--eval-color: var(--purple)">
+        <div class="eval-category">Flexibilitat</div>
+        <h4>Back Scratch Test</h4>
+        <p>Avalua la flexibilitat de l'espatlla. Les dues mans intenten aproximar-se per l'esquena. Distància entre puntes dels dits.</p>
+        <p class="eval-what">En bipedestació · Millor costat</p>
+      </div>
+
+      <div class="eval-card reveal reveal-delay-2" style="--eval-color: var(--purple)">
+        <div class="eval-category">Funcionalitat</div>
+        <h4>Time Up &amp; Go (TUG)</h4>
+        <p>Temps en aixecar-se, caminar 3 m, girar i tornar a seure. Avalua mobilitat, marxa i equilibri dinàmic.</p>
+        <p class="eval-what">Millor de 2 intents · Punt de tall clínic: 12''</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MESOCICLE OVERVIEW -->
+  <section class="mesocicle" id="mesocicle">
+    <div class="section-tag">Planificació</div>
+    <h2>Mesocicle de<br /><span>8 setmanes</span></h2>
+    <div class="meso-header">
+      <p class="section-lead">
+        El programa es divideix en quatre fases de dos microcicles cadascuna, amb progressió
+        de càrrega, volum i autonomia. 3 sessions/setmana · 45–60 min · Presencial + autònom.
+      </p>
+      <div class="meso-timeline reveal">
+        <div class="meso-phase">
+          <div class="meso-phase-num">Fase 1</div>
+          <div class="meso-phase-name" style="color:var(--blue)">Adaptació</div>
+          <div class="meso-phase-weeks">S1 – S2</div>
+          <div class="phase-dot" style="background:var(--blue)"></div>
+        </div>
+        <div class="meso-phase">
+          <div class="meso-phase-num">Fase 2</div>
+          <div class="meso-phase-name" style="color:var(--green)">Progressió</div>
+          <div class="meso-phase-weeks">S3 – S4</div>
+          <div class="phase-dot" style="background:var(--green)"></div>
+        </div>
+        <div class="meso-phase">
+          <div class="meso-phase-num">Fase 3</div>
+          <div class="meso-phase-name" style="color:var(--orange)">Consolidació</div>
+          <div class="meso-phase-weeks">S5 – S6</div>
+          <div class="phase-dot" style="background:var(--orange)"></div>
+        </div>
+        <div class="meso-phase">
+          <div class="meso-phase-num">Fase 4</div>
+          <div class="meso-phase-name" style="color:var(--purple)">Autonomia</div>
+          <div class="meso-phase-weeks">S7 – S8</div>
+          <div class="phase-dot" style="background:var(--purple)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 1: ADAPTACIÓ -->
+  <section class="phase-section" style="--pc: var(--blue)" id="fase1">
+    <div class="phase-header">
+      <div>
+        <div class="phase-label-badge">Fase 1 · Setmanes 1 i 2</div>
+        <h2 class="phase-h2"><span class="phase-h2-color">Adaptació</span></h2>
+        <p class="phase-desc">
+          Introducció progressiva a l'exercici. L'objectiu és crear base fisiològica i neuromotora,
+          establir hàbits de pauses actives i familiaritzar-se amb els moviments fonamentals.
+          Intensitat baixa-moderada, volum controlat.
+        </p>
+      </div>
+      <div class="phase-specs reveal">
+        <div class="phase-spec">
+          <span class="phase-spec-key">Sèries × Reps</span>
+          <span class="phase-spec-val">2 × 12</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Aeròbic</span>
+          <span class="phase-spec-val">20 min</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Intensitat FC</span>
+          <span class="phase-spec-val">50–60% FCmàx</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Focus extra</span>
+          <span class="phase-spec-val">Pauses actives</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="weeks-grid">
+      <div class="week-card reveal" data-week="S1">
+        <div class="week-num">Setmana 1 — Microcicle d'Ajust</div>
+        <h4>Primera presa de contacte</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió A: Escalfament + Pausa activa + Força 2×12 (tren inferior)
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió B: Aeròbic lleuger 20 min (caminar FC 50–60%) + Mobilitat
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió C: Força 2×12 (tren superior + core) + Estiraments
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Cada dia: Pausa activa 10 min (mobilitat cervical + respiració)
+          </div>
+        </div>
+      </div>
+      <div class="week-card reveal reveal-delay-2" data-week="S2">
+        <div class="week-num">Setmana 2 — Microcicle de Càrrega</div>
+        <h4>Consolidació del patró motor</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió A: Força 2×12 · Sentadilla + Pes mort lleuger + Planxa 20''
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió B: Aeròbic continu 20 min FC 50–60% + Estiraments
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--blue)"></div>
+            Sessió C: Rem + Press pit 2×12 + Mobilitat activa global
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Cada dia: Pausa activa + introducció higiene del son
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercises-title">Exercicis principals — Fase 1</div>
+    <div class="exercises-row">
+      <div class="exercise-card reveal">
+        <div class="exercise-icon">🦵</div>
+        <h5>Sentadilla</h5>
+        <p>Tren inferior global. Patró bàsic de pes corporal. Tècnica i rang de moviment.</p>
+        <span class="exercise-tag" style="background:rgba(59,113,198,0.12);color:var(--blue)">2 × 12</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-1">
+        <div class="exercise-icon">⬆️</div>
+        <h5>Pes mort lleuger</h5>
+        <p>Cadena posterior. Iniciació amb pes lleuger o pal. Control lumbar prioritari.</p>
+        <span class="exercise-tag" style="background:rgba(59,113,198,0.12);color:var(--blue)">2 × 12</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-2">
+        <div class="exercise-icon">🤝</div>
+        <h5>Rem amb banda</h5>
+        <p>Esquena i bíceps. Banda elàstica o cable. Patró de tracció horitzontal.</p>
+        <span class="exercise-tag" style="background:rgba(59,113,198,0.12);color:var(--blue)">2 × 12</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-3">
+        <div class="exercise-icon">🏃</div>
+        <h5>Caminar ràpid</h5>
+        <p>Aeròbic moderat. FC 50–60% FCmàx. Test de la parla: es pot mantenir conversa.</p>
+        <span class="exercise-tag" style="background:rgba(59,113,198,0.12);color:var(--blue)">20 min</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 2: PROGRESSIÓ -->
+  <section class="phase-section" style="--pc: var(--green)" id="fase2">
+    <div class="phase-header">
+      <div>
+        <div class="phase-label-badge">Fase 2 · Setmanes 3 i 4</div>
+        <h2 class="phase-h2"><span class="phase-h2-color">Progressió</span></h2>
+        <p class="phase-desc">
+          Augment del volum i la intensitat. S'incorpora mobilitat activa dinàmica i s'incrementa
+          el temps aeròbic. El cos comença a adaptar-se fisiològicament i millorar la coordinació
+          neuromuscular.
+        </p>
+      </div>
+      <div class="phase-specs reveal">
+        <div class="phase-spec">
+          <span class="phase-spec-key">Sèries × Reps</span>
+          <span class="phase-spec-val">3 × 10</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Aeròbic</span>
+          <span class="phase-spec-val">30 min</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Intensitat FC</span>
+          <span class="phase-spec-val">55–65% FCmàx</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Focus extra</span>
+          <span class="phase-spec-val">Mobilitat activa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="weeks-grid">
+      <div class="week-card reveal" data-week="S3">
+        <div class="week-num">Setmana 3 — Microcicle de Càrrega</div>
+        <h4>Increment de volum muscular</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió A: Força 3×10 · Sentadilla + Press pit + Planxa 30''
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió B: Aeròbic 30 min FC 55–65% (bici o caminar) + Mobilitat activa
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió C: Pes mort 3×10 + Rem 3×10 + Estiraments globals
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Pausa activa diària + inici rutina higiene del son
+          </div>
+        </div>
+      </div>
+      <div class="week-card reveal reveal-delay-2" data-week="S4">
+        <div class="week-num">Setmana 4 — Microcicle d'Impacte</div>
+        <h4>Acumulació controlada de fatiga</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió A: Força 3×10 amb lleuger augment de càrrega o dificultat
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió B: Aeròbic 30 min + Mobilitat activa dinàmica (llunges, rotacions)
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--green)"></div>
+            Sessió C: Circuit combinat força + estiraments actius
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Higiene del son: rutina sense pantalles 1h abans de dormir
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercises-title">Exercicis principals — Fase 2</div>
+    <div class="exercises-row">
+      <div class="exercise-card reveal">
+        <div class="exercise-icon">💪</div>
+        <h5>Press pit</h5>
+        <p>Pectorals, triceps i deltoides anteriors. Mancuernes o màquina. Escàpules estabilitzades.</p>
+        <span class="exercise-tag" style="background:rgba(112,173,71,0.12);color:var(--green)">3 × 10</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-1">
+        <div class="exercise-icon">🔄</div>
+        <h5>Mobilitat activa</h5>
+        <p>Llunges amb rotació, obertures de maluc, circles d'espatlles. Rang funcional de moviment.</p>
+        <span class="exercise-tag" style="background:rgba(112,173,71,0.12);color:var(--green)">10 min</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-2">
+        <div class="exercise-icon">🧱</div>
+        <h5>Planxa progressiva</h5>
+        <p>Core i estabilitat lumbar. Progressió: genolls → peus. Posició neutra de columna.</p>
+        <span class="exercise-tag" style="background:rgba(112,173,71,0.12);color:var(--green)">3 × 30''</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-3">
+        <div class="exercise-icon">🚴</div>
+        <h5>Bicicleta estàtica</h5>
+        <p>Alternativa al caminar. FC 55–65% FCmàx. Fórmula: FCmàx = 220 – edat.</p>
+        <span class="exercise-tag" style="background:rgba(112,173,71,0.12);color:var(--green)">30 min</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 3: CONSOLIDACIÓ -->
+  <section class="phase-section" style="--pc: var(--orange)" id="fase3">
+    <div class="phase-header">
+      <div>
+        <div class="phase-label-badge">Fase 3 · Setmanes 5 i 6</div>
+        <h2 class="phase-h2"><span class="phase-h2-color">Consolidació</span></h2>
+        <p class="phase-desc">
+          Augment de càrrega i durada aeròbica. S'integra de forma estructurada la higiene del son
+          com a component terapèutic. La intensitat de força arriba al seu punt màxim del programa.
+          Tres sèries amb càrrega augmentada i registre de RPE.
+        </p>
+      </div>
+      <div class="phase-specs reveal">
+        <div class="phase-spec">
+          <span class="phase-spec-key">Sèries × Reps</span>
+          <span class="phase-spec-val">3 × 8 (càrrega+)</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Aeròbic</span>
+          <span class="phase-spec-val">40 min</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Intensitat FC</span>
+          <span class="phase-spec-val">60–70% FCmàx</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Focus extra</span>
+          <span class="phase-spec-val">Higiene del son</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="weeks-grid">
+      <div class="week-card reveal" data-week="S5">
+        <div class="week-num">Setmana 5 — Microcicle de Càrrega Alta</div>
+        <h4>Màxima intensitat de força</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió A: Força 3×8 càrrega augmentada · Sentadilla + Pes mort + Planxa 40''
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió B: Aeròbic 40 min FC 60–70% + Rutina completa higiene del son
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió C: Press pit + Rem 3×8 + Estiraments dirigits
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Higiene del son diària: relaxació progressiva + horari regular
+          </div>
+        </div>
+      </div>
+      <div class="week-card reveal reveal-delay-2" data-week="S6">
+        <div class="week-num">Setmana 6 — Microcicle d'Impacte</div>
+        <h4>Integració total dels hàbits</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió A: Força 3×8 + Variants d'exercici per novetat i adherència
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió B: Aeròbic 40 min amb canvis de ritme (FC 60–70%)
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--orange)"></div>
+            Sessió C: Circuit complet força + aeròbic curt + estiraments
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Avaluació intermèdia subjectiva de progrés i benestar
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercises-title">Exercicis principals — Fase 3</div>
+    <div class="exercises-row">
+      <div class="exercise-card reveal">
+        <div class="exercise-icon">⚡</div>
+        <h5>Sentadilla amb càrrega</h5>
+        <p>Augment progressiu del pes. Mancuernes laterals o barra guiada. 60–80% de 1RM estimat.</p>
+        <span class="exercise-tag" style="background:rgba(237,125,49,0.12);color:var(--orange)">3 × 8</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-1">
+        <div class="exercise-icon">🏋️</div>
+        <h5>Pes mort clàssic</h5>
+        <p>Càrrega funcional. Cadena posterior completa. Control excèntric de baixada. RPE 6–7.</p>
+        <span class="exercise-tag" style="background:rgba(237,125,49,0.12);color:var(--orange)">3 × 8</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-2">
+        <div class="exercise-icon">🌙</div>
+        <h5>Higiene del son</h5>
+        <p>Relaxació progressiva de Jacobson. Sense pantalles 1h abans. Horari fix d'anar a dormir.</p>
+        <span class="exercise-tag" style="background:rgba(237,125,49,0.12);color:var(--orange)">Diari</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-3">
+        <div class="exercise-icon">💨</div>
+        <h5>Respiració diafragmàtica</h5>
+        <p>Integrada a les pauses actives i al final de sessió. Activació del sistema parasimpàtic.</p>
+        <span class="exercise-tag" style="background:rgba(237,125,49,0.12);color:var(--orange)">10 min</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASE 4: AUTONOMIA -->
+  <section class="phase-section" style="--pc: var(--purple)" id="fase4">
+    <div class="phase-header">
+      <div>
+        <div class="phase-label-badge">Fase 4 · Setmanes 7 i 8</div>
+        <h2 class="phase-h2"><span class="phase-h2-color">Autonomia</span></h2>
+        <p class="phase-desc">
+          La persona assoleix un pla d'entrenament autònom sostenible. S'avaluen els resultats
+          finals i s'estableixen estratègies d'adherència a llarg termini. L'objectiu és garantir
+          la continuïtat dels hàbits adquirits de forma independent.
+        </p>
+      </div>
+      <div class="phase-specs reveal">
+        <div class="phase-spec">
+          <span class="phase-spec-key">Format</span>
+          <span class="phase-spec-val">Pla autònom</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Avaluació</span>
+          <span class="phase-spec-val">Post-programa</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Objectiu</span>
+          <span class="phase-spec-val">Adherència</span>
+        </div>
+        <div class="phase-spec">
+          <span class="phase-spec-key">Seguiment</span>
+          <span class="phase-spec-val">IPAQ-SF + STS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="weeks-grid">
+      <div class="week-card reveal" data-week="S7">
+        <div class="week-num">Setmana 7 — Microcicle d'Activació</div>
+        <h4>Transició cap a l'autonomia</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Sessió A: Rutina autònoma de força amb supervisió reduïda
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Sessió B: Aeròbic a elecció (caminar, bici) · Manteniment FC objectiu
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Sessió C: Circuit complet autònom + registre personal (RPE)
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:rgba(255,255,255,0.12)"></div>
+            Hàbits de son i pauses actives: revisió i ajust personal
+          </div>
+        </div>
+      </div>
+      <div class="week-card reveal reveal-delay-2" data-week="S8">
+        <div class="week-num">Setmana 8 — Avaluació Final</div>
+        <h4>Mesura de l'evolució i adherència</h4>
+        <div class="week-sessions">
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Reaplicació de totes les proves d'avaluació inicials (bateria completa)
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Comparació pre/post: Handgrip, 6MWT, Sit-to-Stand, Flexibilitat
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            IPAQ-SF final: reclassificació del nivell d'AF
+          </div>
+          <div class="week-session-row">
+            <div class="session-dot" style="background:var(--purple)"></div>
+            Entrega del pla d'entrenament autònom personalitzat
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercises-title">Objectius de la fase final</div>
+    <div class="exercises-row">
+      <div class="exercise-card reveal">
+        <div class="exercise-icon">📋</div>
+        <h5>Pla autònom</h5>
+        <p>Document personalitzat amb la rutina setmanal, exercicis i intensitats per continuar de forma independent.</p>
+        <span class="exercise-tag" style="background:rgba(135,100,184,0.12);color:var(--purple)">Entrega</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-1">
+        <div class="exercise-icon">📊</div>
+        <h5>Avaluació post</h5>
+        <p>Repetició de la bateria completa per comparar objectivament els canvis en condició física i hàbits.</p>
+        <span class="exercise-tag" style="background:rgba(135,100,184,0.12);color:var(--purple)">Mesura</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-2">
+        <div class="exercise-icon">🎯</div>
+        <h5>Adherència</h5>
+        <p>Estratègies motivacionals. Model de Prochaska i DiClemente: fase de manteniment com a objectiu final.</p>
+        <span class="exercise-tag" style="background:rgba(135,100,184,0.12);color:var(--purple)">Hàbit</span>
+      </div>
+      <div class="exercise-card reveal reveal-delay-3">
+        <div class="exercise-icon">🤝</div>
+        <h5>Seguiment</h5>
+        <p>Recomanació de seguiment a 3 i 6 mesos. La recaiguda és part del procés, no un fracàs.</p>
+        <span class="exercise-tag" style="background:rgba(135,100,184,0.12);color:var(--purple)">Continu</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COM S'ESTRUCTURA LA SESSIÓ -->
+  <section class="sessions" id="sessions">
+    <div class="section-tag">Disseny de sessions</div>
+    <h2>Com s'estructura<br /><span>cada sessió</span></h2>
+    <p class="section-lead">
+      Cada sessió té tres parts diferenciades. L'ordre respon a principis fisiològics:
+      primer els exercicis que requereixen màxima activació nerviosa, al final els que provoquen
+      més fatiga acumulada.
+    </p>
+
+    <div class="sessions-grid">
+      <div>
+        <div class="session-part reveal">
+          <div class="session-part-num">1</div>
+          <div class="session-part-body">
+            <h4>Escalfament</h4>
+            <p>Preparació física i psicològica. Exercicis senzills i coneguts. Activació cardiovascular progressiva i mobilitat articular. Durada: 8–10 min.</p>
+          </div>
+        </div>
+        <div class="session-part reveal reveal-delay-1">
+          <div class="session-part-num">2</div>
+          <div class="session-part-body">
+            <h4>Cos principal</h4>
+            <p>Primer: exercicis de força (màxima activació nerviosa). Després: component aeròbic. Les activitats amb vies metabòliques ràpides es situen a l'inici. Durada: 30–45 min.</p>
+          </div>
+        </div>
+        <div class="session-part reveal reveal-delay-2">
+          <div class="session-part-num">3</div>
+          <div class="session-part-body">
+            <h4>Tornada a la calma</h4>
+            <p>Recuperació física i psicològica. Estiraments estàtics, respiració conscient i anàlisi subjectiva de la sessió (RPE). Durada: 5–10 min.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="session-types">
+        <div class="session-type-card reveal" style="border-top: 2px solid var(--blue)">
+          <div class="session-type-freq">3× setmana</div>
+          <h4 style="color:var(--blue)">Força funcional</h4>
+          <ul class="session-type-list">
+            <li>Sentadilla (pes corporal o mancuernes)</li>
+            <li>Pes mort (barra o mancuernes lleugers)</li>
+            <li>Rem amb banda elàstica o cable</li>
+            <li>Press pit (mancuernes o màquina)</li>
+            <li>Planxa progressiva (genolls → peus)</li>
+          </ul>
+        </div>
+        <div class="session-type-card reveal reveal-delay-1" style="border-top: 2px solid var(--green)">
+          <div class="session-type-freq">3× setmana</div>
+          <h4 style="color:var(--green)">Aeròbic moderat</h4>
+          <ul class="session-type-list">
+            <li>Caminar ràpid o bicicleta estàtica</li>
+            <li>FC objectiu: 50–70% FCmàx</li>
+            <li>Fórmula: FCmàx = 220 – edat</li>
+            <li>Progressió: 20 → 30 → 40 min</li>
+            <li>Test de la parla per controlar intensitat</li>
+          </ul>
+        </div>
+        <div class="session-type-card reveal reveal-delay-2" style="border-top: 2px solid var(--orange)">
+          <div class="session-type-freq">Cada dia</div>
+          <h4 style="color:var(--orange)">Pausa activa</h4>
+          <ul class="session-type-list">
+            <li>Mobilitat cervical i lumbar (micro-pauses)</li>
+            <li>Estiraments breus d'isquitibials i pectorals</li>
+            <li>Respiració diafragmàtica conscient</li>
+            <li>Durada: 10 min al lloc de treball</li>
+            <li>Trenca la posició sedentària &gt; 8h/dia</li>
+          </ul>
+        </div>
+        <div class="session-type-card reveal reveal-delay-3" style="border-top: 2px solid var(--purple)">
+          <div class="session-type-freq">Cada dia</div>
+          <h4 style="color:var(--purple)">Higiene del son</h4>
+          <ul class="session-type-list">
+            <li>Relaxació progressiva de Jacobson</li>
+            <li>Sense pantalles 1h abans de dormir</li>
+            <li>Horari regular d'anar a dormir i llevar-se</li>
+            <li>Temperatura fresca a l'habitació</li>
+            <li>Registre subjectiu de qualitat del son</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const bar = document.getElementById('progressBar');
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      const prog = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+      bar.style.transform = `scaleX(${prog})`;
+      navbar.classList.toggle('scrolled', window.scrollY > 80);
+    }, { passive: true });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>
