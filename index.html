@@ -1089,6 +1089,15 @@
         document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
       });
     });
+
+    // Force video autoplay on iOS Safari
+    const heroVideo = document.querySelector('.hero-video');
+    if (heroVideo) {
+      const tryPlay = () => heroVideo.play().catch(() => {});
+      tryPlay();
+      document.addEventListener('touchstart', tryPlay, { once: true });
+      document.addEventListener('scroll', tryPlay, { once: true });
+    }
   </script>
 </body>
 </html>
